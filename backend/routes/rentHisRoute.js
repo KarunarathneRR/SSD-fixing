@@ -30,11 +30,10 @@ router.post('/', async(request, response) => {
         };
         const rentalHistory = await RentHis.create(newRent);
 
-        return response.status(201).json(rentalHistory); // Solved XSS vulnerability
+        return response.status(201).json(rentalHistory);
         
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message:  'Internal Server Error'});
+        response.status(500).send({ message:  'Failed to create rental history'});
         
     }
 });
@@ -50,8 +49,7 @@ router.get('/', async(request, response) => {
         });
         
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message})
+        response.status(500).send({ message: 'Failed to fetch rental histories'})
         
     }
 });
@@ -66,8 +64,7 @@ router.get('/:id', async(request, response) => {
         return response.status(200).json(rentalHistory);
         
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message})
+        response.status(500).send({ message: 'Failed to fetch rental history'})
         
     }
 });
@@ -99,8 +96,7 @@ router.put('/:id', async (request, response) => {
             return response.status(200).send({ message: 'Rent updated succesfully'})
 
     } catch (error) {
-    console.log(error.message); 
-    response.status(500).send({ message: error.message });   
+    response.status(500).send({ message: 'Failed to update rent' });   
     }
 })
 
@@ -117,8 +113,7 @@ router.delete('/:id', async (request, response) => {
         return response.status(200).send({ message: 'Rent deleted succesfully'})
         
     } catch (error) {
-        console.log(error.message); 
-    response.status(500).send({ message: error.message });
+    response.status(500).send({ message: 'Failed to delete rent' });
         
     }
 });

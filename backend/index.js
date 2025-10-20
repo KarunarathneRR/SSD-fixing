@@ -88,7 +88,6 @@ app.use((req, res, next) => {
     if (process.env.NODE_ENV !== 'production') {
         const hostHeader = (req.headers.host || '').split(':')[0];
         if (!allowedHosts.includes(hostHeader)) {
-            console.warn('Blocked Host header:', hostHeader, 'Allowed:', allowedHosts);
             return res.status(400).send('Invalid Host header');
         }
     }
@@ -97,23 +96,29 @@ app.use((req, res, next) => {
 
 app.use(cors({
     origin(origin, cb) {
-        // Allow non-browser requests or same-origin (no Origin header)
-        if (!origin) return cb(null, true);
+        // Reject requests with no origin in production for security
+        if (!origin) {
+            // Allow in development, reject in production
+            if (process.env.NODE_ENV === 'production') {
+                return cb(new Error('Origin not allowed'), false);
+            }
+            return cb(null, true);
+        }
         // Normalize incoming origin (strip trailing slash)
         const normalized = origin.replace(/\/$/, '');
 
         if (allowedOrigins.includes(normalized)) {
             return cb(null, true);
         }
-        // Debug while testing
-        console.warn('CORS blocked origin:', normalized, 'Allowed:', allowedOrigins);
-        return cb(new Error('Not allowed by CORS'));
+        // Reject unauthorized origins without exposing internal information
+        return cb(new Error('Origin not allowed'), false);
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    credentials: true, // set true only if you use cookies/auth across origins
-    optionsSuccessStatus: 200, // For legacy browser support
+    credentials: true,
+    optionsSuccessStatus: 200,
     preflightContinue: false,
+    maxAge: 86400, // Cache preflight requests for 24 hours
 }));
 
 // Security headers specifically for Google OAuth
@@ -201,17 +206,12 @@ app.use('/user', userRoutes);
 app.use('/vehicle', vehicleRoutes);
 app.use('/admin', adminRoutes);
 app.use('/rents', rentHisRoute);
-// <<<<<<< piyaraCRUD
-//Payment management - Piyara
 app.use('/cardpayments', cardPaymentsRoute);
 app.use('/cashpayments', cashPaymentsRoute);
 app.use('/savepaymentmethod', paymentMethodRoute);
 app.use('/refundrequests', refundRequestsRoute);
 app.use('/stripepayments', stripePaymentsRoute);
-// =======
 app.use('/api/auth', authRouter);
-
-//Vehicle Maintenance - sachith
 app.use('/records', recordsRoute);
 
 app.use('/offers', offersRoutes);
@@ -234,7 +234,10 @@ mongoose.connect(mongoDBURL || process.env.DB_URI)
             console.log(`Server running on http://${bindAddress}:${port}`);
         });
     })
-    .catch(err => console.log('MongoDB connection error:', err));
+    .catch(err => {
+        console.error('MongoDB connection error');
+        process.exit(1);
+    });
 
 // Scheduled tasks
 cron.schedule('0 7 * * *', async () => {
@@ -299,10 +302,10 @@ app.post('/licenses', upload.single('uploadLicense'), async (req, res) => {
             email: sanitizeHtml(req.body.email || ""),
             notes: sanitizeHtml(req.body.notes || "")
         });
-        res.status(201).json(newLicense); // Solved XSS vulnerability
+        res.status(201).json(newLicense);
     } catch (error) {
-        console.error('Error when adding insurance:', error);
-        res.status(500).send({ message: 'Failed to add insurance', error: error.message || error });
+        console.error('Error when adding license');
+        res.status(500).send({ message: 'Failed to add license' });
     }
 });
 
@@ -311,37 +314,32 @@ app.get('/licenses', async (req, res) => {
         const licenses = await LicenseRepository.getAllLicenses();
         res.send(licenses);
     } catch (error) {
-        res.status(500).send({ message: 'Failed to fetch licenses', error });
-        res.status(500).send({ message: 'Failed to add insurance', error: error.message || error });
+        res.status(500).send({ message: 'Failed to fetch licenses' });
     }
 });
 
 app.put('/licenses/:id', async (req, res) => {
     try {
         const updatedLicense = await LicenseRepository.updateLicense(req.params.id, req.body);
-        res.json(updatedLicense); // Solved XSS vulnerability
+        res.json(updatedLicense);
     } catch (error) {
-        res.status(500).send({ message: 'Failed to update license', error });
-        res.status(500).send({ message: 'Failed to add insurance', error: error.message || error });
+        res.status(500).send({ message: 'Failed to update license' });
     }
 });
 
 app.delete('/licenses/:id', async (req, res) => {
     try {
         const deletedLicense = await LicenseRepository.deleteLicense(req.params.id);
-        res.json(deletedLicense); // Solved XSS vulnerability
+        res.json(deletedLicense);
     } catch (error) {
-        res.status(500).send({ message: 'Failed to delete license', error });
-        res.status(500).send({ message: 'Failed to add insurance', error: error.message || error });
+        res.status(500).send({ message: 'Failed to delete license' });
     }
 });
-//>>>>>>> development-main
 
-// Insurance API routes (similar structure to the license routes)
+// Insurance API routes
 app.post('/insurances', upload.single('uploadInsurance'), async (req, res) => {
     try {
         const newInsurance = await InsuranceRepository.addInsurance({
-            // include all required fields
             vehicleNo: sanitizeHtml(req.body.vehiclenumber),
             insuranceProvider: sanitizeHtml(req.body.insuranceProvider),
             policyNumber: sanitizeHtml(req.body.policyNumber),
@@ -351,43 +349,40 @@ app.post('/insurances', upload.single('uploadInsurance'), async (req, res) => {
             endDate: sanitizeHtml(req.body.endDate),
             premiumAmount: sanitizeHtml(req.body.premiumAmount),
             contactInformation: sanitizeHtml(req.body.contactInformation),
-            uploadInsurance: req.file ? req.file.path : null, // Assuming file is optional
+            uploadInsurance: req.file ? req.file.path : null,
             email: sanitizeHtml(req.body.email),
         });
-        res.status(201).json(newInsurance); // Solved XSS vulnerability
+        res.status(201).json(newInsurance);
     } catch (error) {
-        console.error('Error when adding insurance:', error);
-        res.status(500).send({ message: 'Failed to add insurance', error: error.message || error });
+        console.error('Error when adding insurance');
+        res.status(500).send({ message: 'Failed to add insurance' });
     }
 });
 
 app.get('/insurances', async (req, res) => {
     try {
         const insurances = await InsuranceRepository.getAllInsurances();
-        res.json(insurances); // Solved XSS vulnerability
+        res.json(insurances);
     } catch (error) {
-        res.status(500).send({ message: 'Failed to fetch insurances', error });
-        res.status(500).send({ message: 'Failed to add insurance', error: error.message || error });
+        res.status(500).send({ message: 'Failed to fetch insurances' });
     }
 });
 
 app.put('/insurances/:id', async (req, res) => {
     try {
         const updatedInsurance = await InsuranceRepository.updateInsurance(req.params.id, req.body);
-        res.json(updatedInsurance); // Solved XSS vulnerability
+        res.json(updatedInsurance);
     } catch (error) {
-        res.status(500).send({ message: 'Failed to update insurance', error });
-        res.status(500).send({ message: 'Failed to add insurance', error: error.message || error });
+        res.status(500).send({ message: 'Failed to update insurance' });
     }
 });
 
 app.delete('/insurances/:id', async (req, res) => {
     try {
         const deletedInsurance = await InsuranceRepository.deleteInsurance(req.params.id);
-        res.json(deletedInsurance); // Solved XSS vulnerability
+        res.json(deletedInsurance);
     } catch (error) {
-        res.status(500).send({ message: 'Failed to delete insurance', error });
-        res.status(500).send({ message: 'Failed to add insurance', error: error.message || error });
+        res.status(500).send({ message: 'Failed to delete insurance' });
     }
 });
 export default app;

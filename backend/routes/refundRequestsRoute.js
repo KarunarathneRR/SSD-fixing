@@ -33,10 +33,9 @@ router.post('/user', async (request, response) => {
             };
 
             const refundrequest = await RefundRequest.create(newRefundRequest);
-            return response.status(201).json(refundrequest); // Solved XSS vulnerability
+            return response.status(201).json(refundrequest);
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to create refund request' });
     }
     
 });
@@ -51,8 +50,7 @@ router.get('/admin', async (request, response) => {
             data: refund_requests
         });
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch refund requests' });
     }
 });
 
@@ -77,8 +75,7 @@ router.put('/admin/:id', async (request, response) => {
           
               return response.status(200).send({ message: 'Refund request updated successfully' });
             } catch (error) {
-              console.log(error.message);
-              response.status(500).send({ message: error.message });
+              response.status(500).send({ message: 'Failed to update refund request' });
             }
     });
 
@@ -92,21 +89,8 @@ router.get('/admin/:id', async (request, response) => {
         return response.status(200).json(refundRequest);
 
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch refund request' });
     }
 });
 
-export default router;  
-
-// Read refund template
-// const refundTemplate = fs.readFileSync('D:/OTHER/sliit/Y2S2/ITP Project/Rent-A-Car_MERNSTACK/backend/templates/ReceivedRequest.html' , 'utf8');
-
-// function handleRefundRequest(req, res) {
-
-//     const recipientEmail = req.body.Email;
-//     sendRefundEmail(recipientEmail, refundTemplate);
-// }
-
-// exports.handleRefundRequest = handleRefundRequest;
-// export { handleRefundRequest };
+export default router;

@@ -28,10 +28,9 @@ router.post('/', async (request, response) => {
 
         const record = await Record.create(newRecord);
 
-        return response.status(201).json(record); // Solved XSS vulnerability
+        return response.status(201).json(record);
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to create record' });
     }
 });
 
@@ -45,8 +44,7 @@ router.get('/', async (request, response) => {
         });
 
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch records' });
     }
 });
 
@@ -60,8 +58,7 @@ router.get('/:id', async (request, response) => {
 
         return response.status(200).json(record);
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch record' });
     }
 });
 
@@ -91,8 +88,7 @@ router.put('/:id', async (request, response) => {
         return response.status(200).send({ message: 'Record updated succesfully' });
 
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to update record' });
     }
 })
 
@@ -110,8 +106,7 @@ router.delete('/:id', async (request, response) => {
         return response.status(200).send({ message: 'Record deleted succesfully' });
 
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to delete record' });
     }
 });
 

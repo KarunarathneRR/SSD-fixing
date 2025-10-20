@@ -18,7 +18,6 @@ const router = express.Router();
 router.post('/user', async (request, response) => {
     try {
         if (
-            // !request.body.PaymentID ||
             !request.body.CardNumber ||
             !request.body.CVV ||
             !request.body.DateOfExpiry ||
@@ -29,7 +28,6 @@ router.post('/user', async (request, response) => {
             });
         }
         const newStripePayment = {
-            // PaymentID: request.body.PaymentID,
             CardNumber: sanitizeHtml(request.body.CardNumber),
             CVV: sanitizeHtml(request.body.CVV),
             DateOfExpiry: sanitizeHtml(request.body.DateOfExpiry),
@@ -38,19 +36,9 @@ router.post('/user', async (request, response) => {
 
         const stripePayment = await StripePayment.create(newStripePayment);
 
-        //stripe - start
-        // const paymentIntent = await STRIPE_SECRET_KEY.paymentIntents.create({
-        //     Amount: req.body.Amount,
-        //     currency: 'lkr',
-        //   });
-        //   res.send({ clientSecret: paymentIntent.client_secret });
-
-        //stripe - end
-
-        return response.status(201).json(stripePayment); // Solved XSS vulnerability
+        return response.status(201).json(stripePayment);
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to create stripe payment' });
     }
 });
 
@@ -64,8 +52,7 @@ router.get('/user', async (request, response) => {
             data: stripePayments
         });
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch stripe payments' });
     }
 });
 
@@ -79,8 +66,7 @@ router.get('/admin', async (request, response) => {
             data: stripePayments
         });
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch stripe payments' });
     }
 });
 
@@ -94,8 +80,7 @@ router.get('/user/:id', async (request, response) => {
         return response.status(200).json(stripePayment);
 
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch stripe payment' });
     }
 });
 

@@ -38,10 +38,9 @@ router.post('/', async (request, response) => {
     console.log(newBook)
     const book = await Book.create(newBook);
     console.log(book)
-    return response.status(201).json(book); // Solved XSS vulnerability
+    return response.status(201).json(book);
   } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
+    response.status(500).send({ message: 'Failed to create booking' });
   }
 });
 
@@ -55,8 +54,7 @@ router.get('/', async (request, response) => {
       data: books,
     });
   } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
+    response.status(500).send({ message: 'Failed to fetch bookings' });
   }
 });
 
@@ -69,8 +67,7 @@ router.get('/:id', async (request, response) => {
 
     return response.status(200).json(book);
   } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
+    response.status(500).send({ message: 'Failed to fetch booking' });
   }
 });
 
@@ -103,8 +100,7 @@ router.put('/:id', async (request, response) => {
 
     return response.status(200).send({ message: 'Booking updated successfully' });
   } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
+    response.status(500).send({ message: 'Failed to update booking' });
   }
 });
 
@@ -121,8 +117,7 @@ router.delete('/:id', async (request, response) => {
 
     return response.status(200).send({ message: 'Booking deleted successfully' });
   } catch (error) {
-    console.log(error.message);
-    response.status(500).send({ message: error.message });
+    response.status(500).send({ message: 'Failed to delete booking' });
   }
 });
 

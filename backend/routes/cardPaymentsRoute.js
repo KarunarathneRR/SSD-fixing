@@ -3,7 +3,6 @@ import cors from 'cors';
 import { CardPayment } from '../models/cardPaymentModel.js';
 import fs from 'fs';
 import sanitizeHtml from 'sanitize-html';
-// import sendPaymentEmail from '../index.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -16,7 +15,6 @@ const router = express.Router();
 router.post('/user', async (request, response) => {
     try {
         if (
-            // !request.body.NIC ||
             !request.body.CardHolderName ||
             !request.body.CardNumber ||
             !request.body.CVV ||
@@ -28,7 +26,6 @@ router.post('/user', async (request, response) => {
             });
         }
         const newCardPayment = {
-            // NIC: request.body.NIC,
             CardHolderName: sanitizeHtml(request.body.CardHolderName),
             CardNumber: sanitizeHtml(request.body.CardNumber),
             CVV: sanitizeHtml(request.body.CVV),
@@ -38,10 +35,9 @@ router.post('/user', async (request, response) => {
 
         const cardPayment = await CardPayment.create(newCardPayment);
 
-        return response.status(201).json(cardPayment); // Solved XSS vulnerability
+        return response.status(201).json(cardPayment);
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to process card payment' });
     }
 });
 
@@ -55,8 +51,7 @@ router.get('/user', async (request, response) => {
             data: cardPayments
         });
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch card payments' });
     }
 });
 
@@ -70,8 +65,7 @@ router.get('/admin', async (request, response) => {
             data: cardPayments
         });
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch card payments' });
     }
 });
 
@@ -85,8 +79,7 @@ router.get('/user/:id', async (request, response) => {
         return response.status(200).json(cardPayment);
 
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch card payment' });
     }
 });
 

@@ -9,7 +9,7 @@ router.post('/create', async (request,response)=>{
             !request.body.email||
             !request.body.password
         ){
-            return response.status(400).send('Send all the required fields');
+            return response.status(400).send({message: 'Send all the required fields'});
         }
 
         const newAdmin = {
@@ -18,30 +18,27 @@ router.post('/create', async (request,response)=>{
         }
 
         const newAdminFinal = await adminModel.create(newAdmin);
-        return response.status(201).json(newAdminFinal); // Solved XSS vulnerability
+        return response.status(201).json({message: 'Admin created successfully', email: newAdminFinal.email});
     } catch (error) {
-        
+        return response.status(500).json({message: 'Failed to create admin'});
     }
 })
 
 router.post('/login', async (request,response)=>{
-    const {email, password} = request.body;
+    try {
+        const {email, password} = request.body;
 
-    adminModel.findOne({email: email})
-    .then(user => {
-        if(user){
-            if(user.password === password){
-                response.json({success: "Success", user: user.email})
-                
-            }else{
-                response.json("Incorrect login details")
-            }
-        }else{
-            response.json("No record existed")
+        const user = await adminModel.findOne({email: email});
+        
+        if(user && user.password === password){
+            response.json({success: "Success", user: user.email});
+        } else {
+            response.status(401).json({message: "Invalid credentials"});
         }
-    })
-
-})
+    } catch (error) {
+        response.status(500).json({message: "Authentication failed"});
+    }
+});
 
 
 export default router;

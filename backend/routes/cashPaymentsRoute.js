@@ -16,7 +16,6 @@ const __dirname = path.dirname(__filename);
 router.post('/user', async (request, response) => {
     try {
         if (
-            // !request.body.PaymentID ||
             !request.body.ReceiptNo ||
             !request.body.PaymentDate ||
             !request.body.Status ||
@@ -27,7 +26,6 @@ router.post('/user', async (request, response) => {
             });
         }
         const newCashPayment = {
-            // PaymentID: request.body.PaymentID,
             ReceiptNo: sanitizeHtml(request.body.ReceiptNo),
             Date: sanitizeHtml(request.body.PaymentDate),
             Status: sanitizeHtml(request.body.Status),
@@ -36,10 +34,9 @@ router.post('/user', async (request, response) => {
 
         const cashpayment = await CashPayment.create(newCashPayment);
 
-        return response.status(201).json(cashpayment); // Solved XSS vulnerability
+        return response.status(201).json(cashpayment);
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to create cash payment' });
     }
 });
 
@@ -53,8 +50,7 @@ router.get('/user', async (request, response) => {
             data: cashPayments
         });
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch cash payments' });
     }
 });
 
@@ -68,8 +64,7 @@ router.get('/admin', async (request, response) => {
             data: cashPayments
         });
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch cash payments' });
     }
 });
 
@@ -83,8 +78,7 @@ router.get('/user/:id', async (request, response) => {
         return response.status(200).json(cashPayment);
 
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch cash payment' });
     }
 });
 
@@ -110,8 +104,7 @@ router.put('/admin/:id', async (request, response) => {
         }
         return response.status(200).send({ message: 'Cash Payment updated' });
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to update cash payment' });
     }
 });
 
@@ -125,8 +118,7 @@ router.get('/admin/:id', async (request, response) => {
         return response.status(200).json(cashPayment);
 
     } catch (error) {
-        console.log(error.message);
-        response.status(500).send({ message: error.message });
+        response.status(500).send({ message: 'Failed to fetch cash payment' });
     }
 });
 
